@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package live;
+
+service PubSub {
+    rpc Subscribe (SubRequest) returns (stream Event) {}
+    rpc EmitEvent (EventRequest) returns (EmitAck) {}
+}
+
+message SubRequest {
+    string name = 1;
+}
+
+message Event {
+    string message = 1;
+}
+
+message EventRequest {
+    string event = 1;
+    string topic = 2;
+}
+
+message EmitAck {
+
+}

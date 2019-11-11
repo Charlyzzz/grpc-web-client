@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+protoc -I=$(pwd)/src/grpc pubsub.proto \
+  --js_out=import_style=commonjs:$(pwd)/src \
+  --grpc-web_out=import_style=commonjs,mode=grpcwebtext:$(pwd)/src
+
+cd src
+echo $(PWD)
+for F in $(ls *_pb.js)
+do
+  echo "Prepending file: $F"
+  echo '/* eslint-disable */' | cat - $F > temp && mv temp $F
+done
