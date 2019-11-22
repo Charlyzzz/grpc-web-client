@@ -3,10 +3,10 @@ import logo from './logo.svg';
 import './App.css';
 import { ToastProvider, useToasts } from 'react-toast-notifications'
 
-const { PubSubClient } = require('./pubsub_grpc_web_pb');
+const { LiveClient } = require('./pubsub_grpc_web_pb');
 const { SubRequest } = require('./pubsub_pb.js');
 
-const pubSubService = new PubSubClient('http://localhost:9090');
+const pubSubService = new LiveClient('http://localhost:9900');
 const request = new SubRequest();
 request.setName("topic");
 

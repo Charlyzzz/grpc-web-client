@@ -23,7 +23,7 @@ proto.live = require('./pubsub_pb.js');
  * @struct
  * @final
  */
-proto.live.PubSubClient =
+proto.live.LiveClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -59,7 +59,7 @@ proto.live.PubSubClient =
  * @struct
  * @final
  */
-proto.live.PubSubPromiseClient =
+proto.live.LivePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -93,8 +93,8 @@ proto.live.PubSubPromiseClient =
  *   !proto.live.SubRequest,
  *   !proto.live.Event>}
  */
-const methodDescriptor_PubSub_Subscribe = new grpc.web.MethodDescriptor(
-  '/live.PubSub/Subscribe',
+const methodDescriptor_Live_Subscribe = new grpc.web.MethodDescriptor(
+  '/live.Live/Subscribe',
   grpc.web.MethodType.SERVER_STREAMING,
   proto.live.SubRequest,
   proto.live.Event,
@@ -112,7 +112,7 @@ const methodDescriptor_PubSub_Subscribe = new grpc.web.MethodDescriptor(
  *   !proto.live.SubRequest,
  *   !proto.live.Event>}
  */
-const methodInfo_PubSub_Subscribe = new grpc.web.AbstractClientBase.MethodInfo(
+const methodInfo_Live_Subscribe = new grpc.web.AbstractClientBase.MethodInfo(
   proto.live.Event,
   /** @param {!proto.live.SubRequest} request */
   function(request) {
@@ -129,13 +129,13 @@ const methodInfo_PubSub_Subscribe = new grpc.web.AbstractClientBase.MethodInfo(
  * @return {!grpc.web.ClientReadableStream<!proto.live.Event>}
  *     The XHR Node Readable Stream
  */
-proto.live.PubSubClient.prototype.subscribe =
+proto.live.LiveClient.prototype.subscribe =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/live.PubSub/Subscribe',
+      '/live.Live/Subscribe',
       request,
       metadata || {},
-      methodDescriptor_PubSub_Subscribe);
+      methodDescriptor_Live_Subscribe);
 };
 
 
@@ -146,13 +146,13 @@ proto.live.PubSubClient.prototype.subscribe =
  * @return {!grpc.web.ClientReadableStream<!proto.live.Event>}
  *     The XHR Node Readable Stream
  */
-proto.live.PubSubPromiseClient.prototype.subscribe =
+proto.live.LivePromiseClient.prototype.subscribe =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/live.PubSub/Subscribe',
+      '/live.Live/Subscribe',
       request,
       metadata || {},
-      methodDescriptor_PubSub_Subscribe);
+      methodDescriptor_Live_Subscribe);
 };
 
 
@@ -162,8 +162,8 @@ proto.live.PubSubPromiseClient.prototype.subscribe =
  *   !proto.live.EventRequest,
  *   !proto.live.EmitAck>}
  */
-const methodDescriptor_PubSub_EmitEvent = new grpc.web.MethodDescriptor(
-  '/live.PubSub/EmitEvent',
+const methodDescriptor_Live_EmitEvent = new grpc.web.MethodDescriptor(
+  '/live.Live/EmitEvent',
   grpc.web.MethodType.UNARY,
   proto.live.EventRequest,
   proto.live.EmitAck,
@@ -181,7 +181,7 @@ const methodDescriptor_PubSub_EmitEvent = new grpc.web.MethodDescriptor(
  *   !proto.live.EventRequest,
  *   !proto.live.EmitAck>}
  */
-const methodInfo_PubSub_EmitEvent = new grpc.web.AbstractClientBase.MethodInfo(
+const methodInfo_Live_EmitEvent = new grpc.web.AbstractClientBase.MethodInfo(
   proto.live.EmitAck,
   /** @param {!proto.live.EventRequest} request */
   function(request) {
@@ -201,13 +201,13 @@ const methodInfo_PubSub_EmitEvent = new grpc.web.AbstractClientBase.MethodInfo(
  * @return {!grpc.web.ClientReadableStream<!proto.live.EmitAck>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.live.PubSubClient.prototype.emitEvent =
+proto.live.LiveClient.prototype.emitEvent =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/live.PubSub/EmitEvent',
+      '/live.Live/EmitEvent',
       request,
       metadata || {},
-      methodDescriptor_PubSub_EmitEvent,
+      methodDescriptor_Live_EmitEvent,
       callback);
 };
 
@@ -220,13 +220,13 @@ proto.live.PubSubClient.prototype.emitEvent =
  * @return {!Promise<!proto.live.EmitAck>}
  *     A native promise that resolves to the response
  */
-proto.live.PubSubPromiseClient.prototype.emitEvent =
+proto.live.LivePromiseClient.prototype.emitEvent =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/live.PubSub/EmitEvent',
+      '/live.Live/EmitEvent',
       request,
       metadata || {},
-      methodDescriptor_PubSub_EmitEvent);
+      methodDescriptor_Live_EmitEvent);
 };
 
 

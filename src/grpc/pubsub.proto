@@ -1,8 +1,11 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
+option java_package = "live";
+
 package live;
 
-service PubSub {
+service Live {
     rpc Subscribe (SubRequest) returns (stream Event) {}
     rpc EmitEvent (EventRequest) returns (EmitAck) {}
 }
@@ -23,3 +26,4 @@ message EventRequest {
 message EmitAck {
 
 }
+
