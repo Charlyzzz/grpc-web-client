@@ -6,23 +6,48 @@ import { ToastProvider, useToasts } from 'react-toast-notifications'
 const { LiveClient } = require('./pubsub_grpc_web_pb');
 const { SubRequest } = require('./pubsub_pb.js');
 
-const pubSubService = new LiveClient('http://localhost:9900');
+
+const pubSubService = new LiveClient('http://192.168.1.97:9900');
 const request = new SubRequest();
 request.setName("topic");
 
-const stream = pubSubService.subscribe(request);
+const EventEmitter = require('eventemitter3');
+const s = new EventEmitter();
 
-stream.on('status', console.log);
+const log = (msg) => () => { console.log(msg) }
 
-stream.on('end', (end) => {
-  console.log("Stream end")
-});
+
+const s2 = {
+  cancel() {
+    console.log(this)
+    this.stream.cancel();
+    this.stream = pubSubService.subscribe(request);
+    this.setupStream();
+  },
+  setupStream() {
+    s.removeAllListeners('msg')
+    this.stream.on('data', this.emit.bind(this));
+    this.stream.on('error', log('error'));
+    this.stream.on('error', this.cancel.bind(this));
+    this.stream.on('end', log('end'));
+  },
+  emit(event) {
+    this.callback(event)
+  },
+  onMsg(callback) {
+    this.callback = callback
+  }
+}
+
+s2.callbacks = [];
+s2.stream = pubSubService.subscribe(request);
+s2.setupStream()
 
 const Toasts = () => {
   const { addToast } = useToasts()
-  stream.on('data', (response) => {
+  s2.onMsg(response => {
     addToast(response.getMessage(), { appearance: 'success', autoDismiss: true })
-  });
+  })
   return (null);
 }
 
