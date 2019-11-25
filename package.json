@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "eventemitter3": "^4.0.0",
     "google-protobuf": "^3.10.0",
     "grpc-web": "^1.0.6",
     "react": "^16.11.0",

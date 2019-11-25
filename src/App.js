@@ -1,64 +1,154 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { ToastProvider, useToasts } from 'react-toast-notifications'
+import { ToastProvider, useToasts } from 'react-toast-notifications';
 
+/*
 const { LiveClient } = require('./pubsub_grpc_web_pb');
 const { SubRequest } = require('./pubsub_pb.js');
-
-
 const pubSubService = new LiveClient('http://192.168.1.97:9900');
-const request = new SubRequest();
-request.setName("topic");
 
-const EventEmitter = require('eventemitter3');
-const s = new EventEmitter();
+const subscribe = (topic, opts) => {
 
-const log = (msg) => () => { console.log(msg) }
+  const request = new SubRequest();
+  request.setName(topic);
 
+  const maxRetries = 3;
+  const backoff = 2000;
 
-const s2 = {
-  cancel() {
-    console.log(this)
-    this.stream.cancel();
-    this.stream = pubSubService.subscribe(request);
-    this.setupStream();
-  },
-  setupStream() {
-    s.removeAllListeners('msg')
-    this.stream.on('data', this.emit.bind(this));
-    this.stream.on('error', log('error'));
-    this.stream.on('error', this.cancel.bind(this));
-    this.stream.on('end', log('end'));
-  },
-  emit(event) {
-    this.callback(event)
-  },
-  onMsg(callback) {
-    this.callback = callback
-  }
-}
+  const newSubscription = {
+    callbacks: {},
+    stream: pubSubService.subscribe(request),
+    retryCount: 0,
+    streamErrored(error) {
+      console.error('stream failed');
+      console.error(error);
+      this.retryCount += 1;
+      if (this.retryCount <= maxRetries) {
+        setTimeout(() => this.setupStream(), backoff);
+      } else {
+        this.cleanupStream();
+        throw new Error('Failed too many times!');
+      }
+    },
+    setupStream() {
+      if (this.stream) {
+        this.cleanupStream();
+      }
+      this.stream = pubSubService.subscribe(request);
+      console.log('stream connected!');
+      this.stream.on('data', (data) => this.emit(data));
+      this.stream.on('error', (err) => this.streamErrored(err));
+      this.stream.on('end', () => this.cleanupStream());
+    },
+    cleanupStream() {
+      this.stream.cancel();
+      this.stream = null;
+    },
+    emit(event) {
+      this.streamSucceeded();
+      this.getCallbacks().forEach(callback => callback(event));
+    },
+    streamSucceeded() {
+      this.retryCount = 0;
+    },
+    subscribeOnMessage(id, callback) {
+      this.addCallback(id, callback);
+    },
+    getCallbacks() {
+      return Object.values(this.callbacks);
+    },
+    findCallback(id) {
+      return this.callbacks[id];
+    },
+    addCallback(id, callback) {
+      this.callbacks[id] = callback;
+    }
+  };
+  newSubscription.setupStream();
+  return newSubscription;
+};
+*/
 
-s2.callbacks = [];
-s2.stream = pubSubService.subscribe(request);
-s2.setupStream()
+const wsSubscribe = (topic) => {
+
+  const newSocket = () => new WebSocket('ws://192.168.1.97:9900/ws/' + topic);
+
+  const maxRetries = 3;
+  const backoff = 2000;
+
+  const newSubscription = {
+    callbacks: {},
+    stream: newSocket(),
+    retryCount: 0,
+    streamErrored(error) {
+      console.error('stream failed');
+      console.error(error);
+      this.retryCount += 1;
+      if (this.retryCount <= maxRetries) {
+        setTimeout(() => this.setupStream(), backoff);
+      } else {
+        this.cleanupStream();
+        throw new Error('Failed too many times!');
+      }
+    },
+    setupStream() {
+      if (this.stream) {
+        this.cleanupStream();
+      }
+      this.stream = newSocket();
+      console.log('stream connected!');
+      this.stream.addEventListener('open', () => console.log('open'));
+      this.stream.addEventListener('close', () => this.cleanupStream());
+      this.stream.addEventListener('error', (err) => this.streamErrored(err));
+      this.stream.addEventListener('message', (data) => this.emit(data));
+    },
+    cleanupStream() {
+      this.stream.close();
+      this.stream = null;
+    },
+    emit(event) {
+      this.streamSucceeded();
+      this.getCallbacks().forEach(callback => callback(event));
+    },
+    streamSucceeded() {
+      this.retryCount = 0;
+    },
+    subscribeOnMessage(id, callback) {
+      this.addCallback(id, callback);
+    },
+    getCallbacks() {
+      return Object.values(this.callbacks);
+    },
+    findCallback(id) {
+      return this.callbacks[id];
+    },
+    addCallback(id, callback) {
+      this.callbacks[id] = callback;
+    }
+  };
+  newSubscription.setupStream();
+  return newSubscription;
+};
+
+const s2 = wsSubscribe('example');
 
 const Toasts = () => {
-  const { addToast } = useToasts()
-  s2.onMsg(response => {
-    addToast(response.getMessage(), { appearance: 'success', autoDismiss: true })
-  })
-  return (null);
-}
+  const { addToast } = useToasts();
+  s2.subscribeOnMessage('id', response => {
+    addToast(response.data, { appearance: 'success', autoDismiss: true });
+  });
+  return null;
+};
 
 const App = () => {
 
   return (
     <ToastProvider autoDismissTimeout={2100}>
-      <Toasts />
+      <Toasts/>
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
+          <img src={logo} className="App-logo" alt="logo"/>
           <p>
             Edit <code>src/App.js</code> and save to reload.
           </p>
@@ -75,6 +165,6 @@ const App = () => {
     </ToastProvider>
   );
 
-}
+};
 
 export default App;
