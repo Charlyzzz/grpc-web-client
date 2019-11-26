@@ -1,39 +1,28 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { ToastProvider, useToasts } from 'react-toast-notifications'
+import { ToastProvider, useToasts } from 'react-toast-notifications';
+import { radio } from 'live-client/src/live';
 
-const { LiveClient } = require('./pubsub_grpc_web_pb');
-const { SubRequest } = require('./pubsub_pb.js');
+const radioGaga = radio('localhost', 9900);
+const examples = radioGaga.tuneIn('example');
 
-const pubSubService = new LiveClient('http://localhost:9900');
-const request = new SubRequest();
-request.setName("topic");
-
-const stream = pubSubService.subscribe(request);
-
-stream.on('status', console.log);
-
-stream.on('end', (end) => {
-  console.log("Stream end")
-});
-
-const Toasts = () => {
-  const { addToast } = useToasts()
-  stream.on('data', (response) => {
-    addToast(response.getMessage(), { appearance: 'success', autoDismiss: true })
+const Toasts = ({ examples }) => {
+  const { addToast } = useToasts();
+  examples.onMessage(message => {
+    addToast(message, { appearance: 'success', autoDismiss: true });
   });
-  return (null);
-}
+  return null;
+};
 
 const App = () => {
 
   return (
     <ToastProvider autoDismissTimeout={2100}>
-      <Toasts />
+      <Toasts examples={examples}/>
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
+          <img src={logo} className="App-logo" alt="logo"/>
           <p>
             Edit <code>src/App.js</code> and save to reload.
           </p>
@@ -50,6 +39,6 @@ const App = () => {
     </ToastProvider>
   );
 
-}
+};
 
 export default App;
